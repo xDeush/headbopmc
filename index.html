@@ -70,7 +70,7 @@
 
   .presets-col { justify-self: end; padding: 0; background: none; box-shadow: none; border-radius: 0; overflow: visible; }
   .presets { display: grid; grid-template-columns: repeat(2, auto); gap: 8px; }
-  .preset { height: calc((var(--screen) - 24px) / 4); aspect-ratio: 9 / 16; padding: 0; border: 0; background: none; display: block; transition: transform 160ms var(--ease-out); }
+  .preset { --ph: calc((var(--screen) - 24px) / 4); height: var(--ph); width: calc(var(--ph) * 9 / 16); padding: 0; border: 0; background: none; display: block; transition: transform 160ms var(--ease-out); }
   .preset span { display: none; }
   .preset:active { transform: scale(0.96); }
   .preset canvas { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; display: block; background: var(--raise);
@@ -80,7 +80,8 @@
   .preset[aria-pressed=true] span { color: var(--text); }
 
   #stage { display: flex; flex-direction: column; align-items: center; min-height: 0; flex: none; }
-  #frame { position: relative; height: calc(100dvh - var(--top) - var(--shutter) - 18px); max-width: 46vw; border-radius: 18px; overflow: hidden;
+  /* explicit width AND height from the aspect ratio: Safari squashes flex items sized by aspect-ratio alone */
+  #frame { --ar: .5625; --h: min(var(--screen), calc(46vw / var(--ar))); position: relative; height: var(--h); width: calc(var(--h) * var(--ar)); flex: none; border-radius: 18px; overflow: hidden;
     box-shadow: 0 0 0 1px var(--line), 0 24px 60px -24px rgb(0 0 0 / .8); }
   #out, #gl { position: absolute; inset: 0; width: 100% !important; height: 100% !important; }
   #gl { opacity: 0; cursor: grab; touch-action: none; }
@@ -187,11 +188,11 @@
     .bpm { display: none; }
     .studio { height: auto; display: flex; flex-direction: column; padding: 0 12px; gap: 12px; }
     #stage { order: 0; align-self: center; }
-    #frame { height: 58svh; max-width: 100%; }
+    #frame { --h: min(58svh, calc((100vw - 24px) / var(--ar))); }
     .presets-col { order: 1; width: auto; padding: 0; overflow: visible; }
     .presets { height: auto; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -12px; padding: 0 12px 2px; }
     .presets::-webkit-scrollbar { display: none; }
-    .preset { flex: 0 0 64px; height: auto; scroll-snap-align: start; }
+    .preset { flex: 0 0 64px; width: 64px; height: 114px; scroll-snap-align: start; }
     .tools-wrap { order: 2; position: static; align-self: stretch; }
     .tools { flex-direction: row; overflow-x: auto; scrollbar-width: none; }
     .tool { flex: 1 0 64px; width: auto; }
@@ -394,7 +395,7 @@ viewer.renderer.toneMapping = 4; // ACES – highlights roll off instead of clip
 function setSize() {
   [W, H] = ASPECTS[$('aspect').value];
   out.width = W; out.height = H; viewer.setSize(W, H);
-  $('frame').style.aspectRatio = `${W}/${H}`;
+  $('frame').style.setProperty('--ar', W / H);
   applyCamera();
 }
 function seg(id, input, cb) {
