@@ -32,15 +32,17 @@
   .logo { font: 800 19px/1 'Unbounded', sans-serif; letter-spacing: -0.04em; display: flex; align-items: center; gap: 7px; }
   .logo em { font: 400 11px/1 var(--px); font-style: normal; color: var(--on-acc); background: var(--acc); padding: 4px 5px 3px; border-radius: 4px; }
   .center { display: flex; align-items: center; gap: 10px; }
-  .nick { display: flex; align-items: center; gap: 10px; height: 48px; padding: 5px 5px 5px 6px; border-radius: 14px; background: var(--panel);
-    box-shadow: inset 0 0 0 1px var(--line-2); transition: box-shadow 150ms ease; }
+  .nick { display: flex; align-items: center; gap: 10px; height: 52px; padding: 5px 5px 5px 6px; border-radius: 14px; background: var(--panel);
+    box-shadow: inset 0 0 0 1px rgb(255 91 35 / .45), 0 0 0 4px rgb(255 91 35 / .07); transition: box-shadow 150ms ease; }
   .nick:focus-within { box-shadow: inset 0 0 0 1.5px var(--acc); }
   .nick img { width: 36px; height: 36px; border-radius: 8px; image-rendering: pixelated; background: var(--raise); }
   .nick .f { display: flex; flex-direction: column; gap: 1px; }
-  .nick .f small { font-size: 10.5px; font-weight: 600; color: var(--faint); letter-spacing: .04em; text-transform: uppercase; line-height: 1; }
-  .nick input { width: 190px; border: 0; background: none; outline: none; padding: 0; font: 700 16px/1.2 Manrope, sans-serif; }
+  .nick .f small { display: flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 700; color: var(--acc); letter-spacing: .05em; text-transform: uppercase; line-height: 1; }
+  .nick .f small svg { width: 11px; height: 11px; stroke-width: 2.6; }
+  .nick .f { cursor: text; }
+  .nick input { width: 220px; border-bottom: 1px dashed var(--line-2) !important; border: 0; background: none; outline: none; padding: 0; font: 700 16px/1.2 Manrope, sans-serif; }
   .nick input::placeholder { color: var(--faint); font-weight: 500; }
-  .go { height: 38px; padding: 0 14px; border: 0; border-radius: 10px; background: var(--text); color: var(--bg); font-weight: 700; display: flex; align-items: center; gap: 6px;
+  .go { height: 40px; padding: 0 16px; border: 0; border-radius: 10px; background: var(--acc); color: var(--on-acc); font-weight: 700; display: flex; align-items: center; gap: 6px;
     transition: transform 140ms var(--ease-out); }
   .go:active { transform: scale(0.97); }
   .icon { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; border: 0; background: var(--raise); color: var(--muted); transition: transform 140ms var(--ease-out), color 150ms ease; }
@@ -51,7 +53,12 @@
   .steps i { width: 7px; height: 7px; background: rgb(255 240 225 / .16); transition: background-color 60ms linear; }
   .steps i.on { background: var(--acc); }
   #bpmLbl { font: 400 12px/1 var(--px); }
-  #status { justify-self: end; font-size: 12px; color: var(--faint); text-align: right; }
+  .right { justify-self: end; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .try { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--faint); }
+  .try button { height: 26px; padding: 0 10px; border: 0; border-radius: 999px; background: var(--raise); color: var(--muted); font-size: 12px; font-weight: 600;
+    transition: transform 140ms var(--ease-out), color 150ms ease; }
+  .try button:active { transform: scale(0.95); }
+  #status { font-size: 12px; color: var(--faint); text-align: right; }
   #status.ok { color: var(--muted); } #status.err { color: #ff8a7a; }
 
   /* ---------- studio: presets | screen | settings ---------- */
@@ -140,6 +147,7 @@
   @media (hover: hover) and (pointer: fine) {
     .tool:hover { color: var(--text); }
     .preset:hover span { color: var(--text); }
+    .try button:hover { color: var(--text); }
     .icon:hover { color: var(--text); }
     .seg button:hover { color: var(--text); } .seg button[aria-pressed=true]:hover { color: var(--bg); }
     .link:hover { color: var(--text); }
@@ -153,13 +161,14 @@
     body { height: auto; overflow: visible; padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)); }
     .top { height: auto; grid-template-columns: 1fr; padding: max(10px, env(safe-area-inset-top)) 12px 10px; gap: 8px; }
     .logo, #status { display: none; }
+    .right { justify-self: start; }
     .center { flex-wrap: wrap; }
     .nick { flex: 1; min-width: 0; }
     .nick input { width: 100%; min-width: 0; }
     .nick .f { flex: 1; min-width: 0; }
     .bpm { display: none; }
     .studio { height: auto; display: flex; flex-direction: column; padding: 0 12px; gap: 12px; }
-    #stage { order: 0; }
+    #stage { order: 0; align-self: center; }
     #frame { height: 58svh; max-width: 100%; }
     .presets-col { order: 1; width: auto; padding: 0; overflow: visible; }
     .presets { height: auto; display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 -12px; padding: 0 12px 2px; }
@@ -183,14 +192,14 @@
   <div class="center">
     <form class="nick" id="nickForm">
       <img id="avatar" alt="" src="https://minotar.net/helm/xDeush/48">
-      <label class="f"><small>Minecraft name</small>
-        <input type="text" id="nick" placeholder="Type a player name…" value="xDeush" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="go"></label>
+      <label class="f"><small><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>Search any player</small>
+        <input type="text" id="nick" placeholder="Type any Minecraft name…" value="xDeush" autocapitalize="none" autocorrect="off" spellcheck="false" enterkeyhint="search"></label>
       <label class="icon" title="Upload a skin PNG instead"><svg viewBox="0 0 24 24"><path d="M12 15V3m-5 5 5-5 5 5M5 21h14"/></svg><input type="file" id="skinFile" accept="image/png"></label>
-      <button class="go" type="submit">Load skin</button>
+      <button class="go" type="submit">Load</button>
     </form>
     <div class="bpm" title="Tempo"><span class="steps" id="steps"><i></i><i></i><i></i><i></i></span><i id="beatDot" hidden></i><span id="bpmLbl">120 BPM</span></div>
   </div>
-  <div id="status"></div>
+  <div class="right"><div class="try"><span>Try</span><button data-n="Dream">Dream</button><button data-n="Technoblade">Technoblade</button><button data-n="Notch">Notch</button></div><div id="status"></div></div>
 </header>
 
 <div class="studio">
@@ -289,12 +298,12 @@ function setP(k, v) { P[k] = v; const s = $('s-'+k); if (s) { s.value = v; paint
 
 // ---------- presets ----------
 const PRESETS = {
-  'Golden hour': { camYaw:35, camPitch:-22, camDist:44, camTarget:5, fov:38, bodyYaw:10, headYaw:12, headPitch:-6, rArmX:0, rArmZ:6, lArmX:0, lArmZ:-6, nod:18, sway:6, turn:4, keyYaw:-30, keyPitch:35, keyColor:'#ffe2bd', rimColor:'#ff7ad9', bg:['gradient','#ffb36b','#3a1d6e'] },
+  'Golden hour': { camYaw:35, camPitch:-22, camDist:44, camTarget:5, fov:38, bodyYaw:10, headYaw:12, headPitch:-6, rArmX:0, rArmZ:-5, lArmX:0, lArmZ:5, nod:18, sway:6, turn:4, keyYaw:-30, keyPitch:35, keyColor:'#ffe2bd', rimColor:'#ffd0a0', bg:['gradient','#f6c79a','#b65f6e'] },
   'Side profile': { camYaw:90, camPitch:-4, camDist:40, camTarget:6, fov:35, nod:22, sway:0, turn:0, keyYaw:20, keyPitch:30, rim:3, keyColor:'#f4f1ff', rimColor:'#5ad1ff', bg:['gradient','#1d1d2b','#05050a'], vignette:.6 },
-  'Reach out': { camYaw:-20, camPitch:-15, camDist:38, camTarget:9, fov:48, bodyYaw:-25, headYaw:15, headPitch:-5, rArmX:-100, rArmZ:-15, lArmX:0, lArmZ:-5, nod:16, sway:5, turn:5, armBop:8, keyYaw:15, keyPitch:30, keyColor:'#fff4e0', rimColor:'#ffb300', bg:['gradient','#7ec8ff','#2f7d32'] },
+  'Reach out': { camYaw:-20, camPitch:-15, camDist:38, camTarget:9, fov:48, bodyYaw:-25, headYaw:15, headPitch:-5, rArmX:-100, rArmZ:-15, lArmX:0, lArmZ:5, nod:16, sway:5, turn:5, armBop:8, keyYaw:15, keyPitch:30, keyColor:'#fff4e0', rimColor:'#ffb300', bg:['gradient','#8fd3ff','#dff3ff'] },
   'Close-up': { camYaw:25, camPitch:-6, camDist:22, camTarget:13, fov:40, headYaw:-10, nod:22, sway:8, turn:6, keyYaw:-40, keyPitch:25, keyColor:'#ffd9e6', rimColor:'#ff2e63', bg:['gradient','#ff2e63','#08002e'], vignette:.55 },
-  'Front chill': { camYaw:0, camPitch:4, camDist:52, camTarget:2, fov:35, rArmX:-10, rArmZ:8, lArmX:10, lArmZ:-8, nod:14, sway:8, turn:0, keyYaw:-35, keyPitch:40, keyColor:'#ffffff', rimColor:'#ffffff', rim:1.2, bg:['gradient','#a1c4fd','#c2e9fb'], vignette:.15 },
-  'Green screen': { camYaw:-25, camPitch:-15, camDist:38, camTarget:8, fov:45, bodyYaw:-20, headYaw:10, headPitch:-5, rArmX:-95, rArmZ:-10, lArmZ:-5, nod:18, sway:5, turn:4, keyYaw:-50, keyPitch:30, keyColor:'#ffffff', rimColor:'#ffe08a', vignette:0, bg:['green'] },
+  'Front chill': { camYaw:0, camPitch:4, camDist:52, camTarget:2, fov:35, rArmX:-10, rArmZ:-8, lArmX:10, lArmZ:8, nod:14, sway:8, turn:0, keyYaw:-35, keyPitch:40, keyColor:'#ffffff', rimColor:'#ffffff', rim:1.2, bg:['gradient','#a1c4fd','#c2e9fb'], vignette:.15 },
+  'Green screen': { camYaw:-25, camPitch:-15, camDist:38, camTarget:8, fov:45, bodyYaw:-20, headYaw:10, headPitch:-5, rArmX:-95, rArmZ:-10, lArmZ:5, nod:18, sway:5, turn:4, keyYaw:-50, keyPitch:30, keyColor:'#ffffff', rimColor:'#ffe08a', vignette:0, bg:['green'] },
   'Neon night': { camYaw:55, camPitch:-12, camDist:40, camTarget:7, fov:40, bodyYaw:15, headPitch:-5, nod:20, sway:4, turn:3, key:2.6, keyYaw:-80, keyPitch:15, rim:3.5, keyColor:'#b84dff', rimColor:'#2ee6ff', shake:4, bg:['gradient','#12002b','#000000'], vignette:.6 },
   'Over shoulder': { camYaw:205, camPitch:-6, camDist:32, camTarget:10, fov:45, headYaw:-35, nod:16, sway:4, turn:3, keyYaw:150, keyPitch:30, keyColor:'#ffe6c4', rimColor:'#ff9a3c', bg:['gradient','#f6d365','#fda085'] },
 };
@@ -382,6 +391,8 @@ async function loadNick() {
   setStatus('Player not found or skin server is down', 'err'); renderThumbs();
 }
 function setStatus(t, cls = '') { $('status').textContent = t; $('status').className = cls; }
+document.querySelectorAll('.try button').forEach(b => b.onclick = () => { $('nick').value = b.dataset.n; loadNick(); });
+$('nick').addEventListener('focus', e => e.target.select());
 $('nickForm').onsubmit = e => { e.preventDefault(); $('nick').blur(); loadNick(); };
 $('skinFile').onchange = e => { const f = e.target.files[0]; if (f) { viewer.loadSkin(URL.createObjectURL(f), { model:'auto-detect' }); setStatus('Skin loaded from file', 'ok'); setTimeout(renderThumbs, 300); } };
 $('nameTag').oninput = e => { viewer.nameTag = e.target.value || null; };
