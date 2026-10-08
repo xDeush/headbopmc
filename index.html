@@ -469,7 +469,7 @@ function lights() {
   keyLight.color.set($('keyColor').value); keyLight.intensity = P.key * 1.6; place(keyLight, P.keyYaw + yawOff, P.keyPitch, 60);
   rimLight.color.set($('rimColor').value);
   // held items: Minecraft lights them almost flat, so give them a base glow plus the key light's colour and strength
-  colorMats.forEach(m => m.emissive.copy(m.color).multiplyScalar(.32 + P.ambient * .12).add(keyLight.color.clone().multiply(m.color).multiplyScalar(P.key * .14))); rimLight.intensity = P.rim * 1.6; place(rimLight, P.keyYaw + yawOff + 180, 20, 60);
+  colorMats.forEach(m => m.emissive.copy(m.color).multiplyScalar(.7 + P.ambient * .1).add(keyLight.color.clone().multiply(m.color).multiplyScalar(P.key * .06))); rimLight.intensity = P.rim * 1.6; place(rimLight, P.keyYaw + yawOff + 180, 20, 60);
 }
 function drawBg() {
   const type = $('bgType').value;
@@ -636,7 +636,7 @@ function itemModel(img, id, left) {
     let e = x + 1;
     while (e < w) { const j = (y * w + e) * 4; if (px[j + 3] < 128 || ((px[j] << 16) | (px[j + 1] << 8) | px[j + 2]) !== col) break; e++; }
     let m = colorMats.get(col);
-    if (!m) { m = T.mat.clone(); m.map = null; m.transparent = false; m.alphaTest = 0; m.color.setHex(col); colorMats.set(col, m); }
+    if (!m) { m = T.mat.clone(); m.map = null; m.transparent = false; m.alphaTest = 0; m.color.setHex(col); m.toneMapped = false; colorMats.set(col, m); }
     const mesh = new T.Mesh(geo, m);
     // item model space: 0..16, y up, 1px thick slab centred on z = 8
     mesh.scale.set(e - x, 1, 1); mesh.position.set((x + e) / 2, w - y - 0.5, w / 2);
