@@ -19,6 +19,7 @@
     --top: 76px; --shutter: 104px;
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%; overscroll-behavior: none; background: var(--bg); }
   body { margin: 0; height: 100dvh; overflow: hidden; color: var(--text); background: var(--bg); font: 500 13px/1.4 Manrope, system-ui, sans-serif; }
   ::selection { background: var(--acc); color: var(--on-acc); }
@@ -126,6 +127,16 @@
   .pick { display: flex; gap: 6px; align-items: center; } .pick .field { margin: 2px 0 6px; } .pick .icon { flex: none; width: 36px; height: 36px; margin-bottom: 4px; }
   .chipbtn { height: 30px; padding: 0 10px; border: 0; border-radius: 999px; background: var(--raise); color: var(--muted); font-size: 12px; font-weight: 600; transition: transform 140ms var(--ease-out), color 150ms ease; }
   .chipbtn:active { transform: scale(0.96); }
+  .igrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 4px; margin: 4px 0 8px; }
+  .irow { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 8px; }
+  .irow .ibtn { width: 38px; }
+  .ibtn { aspect-ratio: 1; padding: 0; border: 0; border-radius: 8px; background: var(--raise); display: grid; place-items: center; color: var(--faint); font-size: 10px; font-weight: 700;
+    transition: transform 140ms var(--ease-out), box-shadow 150ms ease; }
+  .ibtn:active { transform: scale(0.93); }
+  .ibtn img { width: 26px; height: 26px; image-rendering: pixelated; }
+  .ibtn[aria-pressed=true] { box-shadow: inset 0 0 0 2px var(--acc); background: rgb(255 91 35 / .12); }
+  .amatrix { display: grid; grid-template-columns: 70px repeat(7, minmax(0, 40px)); gap: 4px; align-items: center; margin: 4px 0 8px; }
+  .amatrix > span { font-size: 12px; color: var(--muted); }
   .pack { margin-top: 8px; padding-top: 10px; border-top: 1px solid var(--line); }
   .lbl { font-size: 12.5px; color: var(--muted); display: block; margin-top: 4px; }
   .link { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 12.5px; }
@@ -142,7 +153,7 @@
   .tool span { font-size: 11px; font-weight: 600; }
   .tool[aria-expanded=true] { background: var(--raise); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
   .tool[aria-expanded=true] svg { color: var(--acc); }
-  .sheet { position: absolute; left: calc(100% + 10px); top: 0; width: 300px; max-height: calc(100dvh - var(--top) - 18px); overflow-y: auto; overscroll-behavior: contain;
+  .sheet { position: absolute; left: calc(100% + 10px); top: 0; width: 336px; max-height: calc(100dvh - var(--top) - 18px); overflow-y: auto; overscroll-behavior: contain;
     padding: 14px 16px 16px; border-radius: 18px; background: var(--panel); box-shadow: inset 0 0 0 1px var(--line), 0 24px 60px -24px rgb(0 0 0 / .8); scrollbar-width: none; z-index: 4;
     opacity: 0; transform: translateX(-10px) scale(0.98); transform-origin: left top; pointer-events: none; visibility: hidden; transition: opacity 160ms var(--ease-out), transform 220ms var(--ease-out), visibility 0s 220ms; }
   .sheet.open { opacity: 1; transform: none; pointer-events: auto; visibility: visible; transition-delay: 0s; }
@@ -153,6 +164,8 @@
     .tool:hover { color: var(--text); }
     .preset:hover span { color: var(--text); }
     .try button:hover { color: var(--text); }
+    .ibtn:hover { box-shadow: inset 0 0 0 1px var(--line-2); }
+    .ibtn[aria-pressed=true]:hover { box-shadow: inset 0 0 0 2px var(--acc); }
     .icon:hover { color: var(--text); }
     .seg button:hover { color: var(--text); } .seg button[aria-pressed=true]:hover { color: var(--bg); }
     .link:hover { color: var(--text); }
@@ -257,28 +270,24 @@
       <input class="field" type="text" id="nameTag" placeholder="empty = none" autocapitalize="none" autocorrect="off">
     </div>
     <div class="pane" data-p="items" hidden>
-      <span class="lbl">Right hand</span>
-      <div class="pick"><input class="field" id="rightItem" list="itemList" placeholder="Search items, e.g. diamond_sword" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="icon" id="rightClear" aria-label="Clear right hand"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-      <span class="lbl">Left hand</span>
-      <div class="pick"><input class="field" id="leftItem" list="itemList" placeholder="Search items, e.g. totem_of_undying" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="icon" id="leftClear" aria-label="Clear left hand"><svg viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg></button></div>
-      <datalist id="itemList"></datalist>
-      <p class="hint">Any item from the game. Use the Pose sliders to raise the arm.</p>
+      <div class="seg" id="handSeg"><button data-v="right" aria-pressed="true">Right hand</button><button data-v="left">Left hand</button></div>
+      <div class="pick"><input class="field" id="itemSearch" placeholder="Search items…" autocapitalize="none" autocorrect="off" spellcheck="false"><button class="chipbtn" id="handClear">Empty hand</button></div>
+      <div class="igrid" id="itemGrid"></div>
+      <p class="hint" id="itemMore"></p>
+      <input type="hidden" id="handVal" value="right">
     </div>
     <div class="pane" data-p="armor" hidden>
-      <div class="grid2">
-        <label><span class="lbl">Helmet</span><select class="field" id="helmet"></select></label>
-        <label><span class="lbl">Chestplate</span><select class="field" id="chest"></select></label>
-        <label><span class="lbl">Leggings</span><select class="field" id="legs"></select></label>
-        <label><span class="lbl">Boots</span><select class="field" id="boots"></select></label>
-      </div>
-      <div class="swatches"><label><input class="swatch" type="color" id="leather" value="#a06540">Leather dye</label><button class="chipbtn" id="fullSet">Netherite + gold Silence trim</button></div>
-      <div class="grid2">
-        <label><span class="lbl">Trim pattern</span><select class="field" id="trim"></select></label>
-        <label><span class="lbl">Trim material</span><select class="field" id="trimMat"></select></label>
-      </div>
+      <span class="lbl">Full set</span>
+      <div class="irow" id="setRow"></div>
+      <span class="lbl">Each piece</span>
+      <div class="amatrix" id="armorGrid"></div>
+      <div class="swatches" id="leatherRow" hidden><label><input class="swatch" type="color" id="leather" value="#a06540">Leather dye</label></div>
+      <span class="lbl">Trim</span>
+      <div class="igrid" id="trimGrid"></div>
+      <span class="lbl">Trim material</span>
+      <div class="irow" id="trimMatRow"></div>
       <div class="pack">
-        <span class="lbl">Textures</span>
-        <p class="hint">Loaded from a public Minecraft asset mirror (MC 1.21.4). Want your own look? Pick a resource pack .zip, or your game's client .jar from .minecraft/versions.</p>
+        <p class="hint">Textures come from a public Minecraft asset mirror (MC 1.21.4). Want your own look? Pick a resource pack .zip, or your game's client .jar from .minecraft/versions.</p>
         <label class="link">use my resource pack or .jar<input type="file" id="packFile" accept=".zip,.jar"></label> <span class="hint" id="packName"></span>
       </div>
     </div>
@@ -458,7 +467,8 @@ function lights() {
   const place = (L, yaw, pitch, dist) => L.position.set(Math.sin(yaw*D)*Math.cos(pitch*D)*dist, 8+Math.sin(pitch*D)*dist, Math.cos(yaw*D)*Math.cos(pitch*D)*dist);
   const yawOff = P.bodyYaw;
   keyLight.color.set($('keyColor').value); keyLight.intensity = P.key * 1.6; place(keyLight, P.keyYaw + yawOff, P.keyPitch, 60);
-  rimLight.color.set($('rimColor').value); rimLight.intensity = P.rim * 1.6; place(rimLight, P.keyYaw + yawOff + 180, 20, 60);
+  rimLight.color.set($('rimColor').value);
+  colorMats.forEach(m => m.emissive.copy(keyLight.color).multiply(m.color).multiplyScalar(P.key * .16)); rimLight.intensity = P.rim * 1.6; place(rimLight, P.keyYaw + yawOff + 180, 20, 60);
 }
 function drawBg() {
   const type = $('bgType').value;
@@ -600,7 +610,10 @@ function box(mat, w, h, d, infl, u, v, mirror = false) {
 
 // held item: every opaque pixel row-run becomes a 1px-thick voxel strip, like Minecraft's item models
 const colorMats = new Map();
-function itemModel(img) {
+// tools and weapons are gripped by the handle and point forward; everything else is held small and upright,
+// like the game's 'handheld' vs 'generated' item models
+const HANDHELD = /(sword|_axe|pickaxe|shovel|_hoe|mace|trident|stick|_rod|fishing_rod|on_a_stick|bone|brush)$/;
+function itemModel(img, id) {
   const w = img.width, { d } = pixels(img, w, w);
   const g = new T.Group(), geo = new T.Box(1, 1, 1), px = d.data;
   for (let y = 0; y < w; y++) for (let x = 0; x < w;) {
@@ -615,10 +628,17 @@ function itemModel(img) {
     mesh.scale.set(e - x, 1, 1); mesh.position.set((x + e) / 2 - w / 2, w / 2 - y - 0.5, 0);
     g.add(mesh); x = e;
   }
-  const s = 16 / w; g.scale.setScalar(s);
-  g.position.set(5.5, 5.5, 0); // grip pixel (2, 13) sits in the fist
+  g.scale.setScalar(16 / w);
   const holder = new T.Group(); holder.add(g);
-  holder.rotation.set(0, -Math.PI / 2, 0); holder.position.set(0, -5.5, 0.5); holder.scale.setScalar(.8);
+  holder.rotation.set(0, -Math.PI / 2, 0);
+  if (HANDHELD.test(id)) {
+    g.position.set(5.5, 5.5, 0); // grip pixel (2, 13) sits in the fist
+    holder.position.set(0, -5.5, 0.5); holder.scale.setScalar(.8);
+  } else {
+    const big = /bow$|shield|totem/.test(id);
+    holder.position.set(0, -6.5, 2.2); holder.scale.setScalar(big ? .62 : .5);
+    holder.rotation.x = -0.25;
+  }
   return holder;
 }
 
@@ -662,7 +682,7 @@ async function applyEquip() {
   const add = (parent, mesh, pos) => built.push([parent, mesh, pos]);
   const armL = SK.leftArm.children[0], armR = SK.rightArm.children[0], legL = SK.leftLeg.children[0], legR = SK.rightLeg.children[0];
   try {
-    for (const [hand, arm] of [['right', armR], ['left', armL]]) if (EQ[hand]) add(arm, itemModel(await tex(`item/${EQ[hand]}.png`)));
+    for (const [hand, arm] of [['right', armR], ['left', armL]]) if (EQ[hand]) add(arm, itemModel(await tex(`item/${EQ[hand]}.png`), EQ[hand]));
     const piece = async (slot, layer, place) => {
       if (!EQ[slot]) return;
       const mats = [mkMat(await armorCanvas(layer, EQ[slot]))];
@@ -688,33 +708,61 @@ async function applyEquip() {
   renderThumbs();
 }
 
-// equipment UI
+// equipment UI: everything is picked by clicking game icons
 const ARMOR_MATS = ['leather', 'chainmail', 'iron', 'gold', 'diamond', 'netherite'];
-function fillSelect(sel, values, none = 'None') {
-  sel.innerHTML = `<option value="">${none}</option>` + values.map(v => `<option value="${v}">${v.replace(/_/g, ' ')}</option>`).join('');
+const PIECES = [['helmet', 'Helmet', 'helmet'], ['chest', 'Chestplate', 'chestplate'], ['legs', 'Leggings', 'leggings'], ['boots', 'Boots', 'boots']];
+const TRIM_ICON = { amethyst: 'amethyst_shard', copper: 'copper_ingot', diamond: 'diamond', emerald: 'emerald', gold: 'gold_ingot', iron: 'iron_ingot',
+  lapis: 'lapis_lazuli', netherite: 'netherite_ingot', quartz: 'quartz', redstone: 'redstone', resin: 'resin_brick' };
+const itemIcon = (mat, piece) => `${mat === 'gold' ? 'golden' : mat}_${piece}`;
+const NONE_SVG = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="m6.5 17.5 11-11"/></svg>';
+function iconBtn(path, title, on, onClick) {
+  const b = document.createElement('button');
+  b.className = 'ibtn'; b.title = title; b.setAttribute('aria-label', title); b.setAttribute('aria-pressed', !!on);
+  if (path) { const im = document.createElement('img'); im.alt = ''; b.appendChild(im); tex(`item/${path}.png`).then(i => im.src = i.src).catch(() => b.textContent = title.slice(0, 3)); }
+  else b.innerHTML = NONE_SVG;
+  b.onclick = e => { e.stopPropagation(); onClick(); };
+  return b;
 }
+let hand = 'right', allItems = [], trimPatterns = [], trimMats = [];
+function drawArmor() {
+  const set = $('setRow'); set.innerHTML = '';
+  set.appendChild(iconBtn('', 'No armor', PIECES.every(([k]) => !EQ[k]), () => { PIECES.forEach(([k]) => EQ[k] = ''); equipChanged(); }));
+  for (const m of ARMOR_MATS) set.appendChild(iconBtn(itemIcon(m, 'chestplate'), `Full ${m} set`, PIECES.every(([k]) => EQ[k] === m), () => { PIECES.forEach(([k]) => EQ[k] = m); equipChanged(); }));
+  const g = $('armorGrid'); g.innerHTML = '';
+  for (const [k, label, piece] of PIECES) {
+    const l = document.createElement('span'); l.textContent = label; g.appendChild(l);
+    g.appendChild(iconBtn('', `No ${label.toLowerCase()}`, !EQ[k], () => { EQ[k] = ''; equipChanged(); }));
+    for (const m of ARMOR_MATS) g.appendChild(iconBtn(itemIcon(m, piece), `${m} ${label.toLowerCase()}`, EQ[k] === m, () => { EQ[k] = EQ[k] === m ? '' : m; equipChanged(); }));
+  }
+  $('leatherRow').hidden = !PIECES.some(([k]) => EQ[k] === 'leather');
+  const t = $('trimGrid'); t.innerHTML = '';
+  t.appendChild(iconBtn('', 'No trim', !EQ.trim, () => { EQ.trim = ''; equipChanged(); }));
+  for (const p of trimPatterns) t.appendChild(iconBtn(`${p}_armor_trim_smithing_template`, `${p} trim`, EQ.trim === p, () => { EQ.trim = p; equipChanged(); }));
+  const tm = $('trimMatRow'); tm.innerHTML = '';
+  for (const m of trimMats) tm.appendChild(iconBtn(TRIM_ICON[m] || m, `${m} trim material`, EQ.trimMat === m, () => {
+    EQ.trimMat = m; if (!EQ.trim && trimPatterns.length) EQ.trim = trimPatterns.includes('silence') ? 'silence' : trimPatterns[0]; equipChanged();
+  }));
+}
+function drawItems() {
+  const q = $('itemSearch').value.trim().toLowerCase().replace(/ /g, '_');
+  const hits = allItems.filter(n => n.includes(q));
+  const g = $('itemGrid'); g.innerHTML = '';
+  g.appendChild(iconBtn('', 'Empty hand', !EQ[hand], () => { EQ[hand] = ''; equipChanged(); }));
+  hits.slice(0, 119).forEach(n => g.appendChild(iconBtn(n, n.replace(/_/g, ' '), EQ[hand] === n, () => { EQ[hand] = n; equipChanged(); })));
+  $('itemMore').textContent = hits.length > 119 ? `Showing 119 of ${hits.length}. Type to narrow it down.` : hits.length ? '' : 'No items match.';
+}
+function equipChanged() { drawArmor(); drawItems(); applyEquip(); }
 async function fillEquipLists() {
   const [items, patterns, palettes] = await Promise.all([listDir('item'), listDir('trims/entity/humanoid'), listDir('trims/color_palettes')]);
-  $('itemList').innerHTML = items.map(n => `<option value="${n}">`).join('');
-  fillSelect($('trim'), patterns);
-  const tm = palettes.filter(n => n !== 'trim_palette' && !n.endsWith('_darker'));
-  $('trimMat').innerHTML = tm.map(v => `<option value="${v}">${v.replace(/_/g, ' ')}</option>`).join('');
-  $('trimMat').value = EQ.trimMat;
+  allItems = items; trimPatterns = patterns;
+  trimMats = palettes.filter(n => n !== 'trim_palette' && !n.endsWith('_darker'));
+  drawArmor(); drawItems();
 }
-['helmet', 'chest', 'legs', 'boots'].forEach(slot => fillSelect($(slot), slot === 'helmet' ? [...ARMOR_MATS, 'turtle_scute'] : ARMOR_MATS));
 fillEquipLists();
-for (const id of ['helmet', 'chest', 'legs', 'boots', 'trim', 'trimMat']) $(id).onchange = e => { EQ[id] = e.target.value; applyEquip(); };
+seg('handSeg', 'handVal', () => { hand = $('handVal').value; drawItems(); });
+$('itemSearch').oninput = drawItems;
+$('handClear').onclick = () => { EQ[hand] = ''; equipChanged(); };
 $('leather').oninput = e => { EQ.leather = e.target.value; clearTimeout($('leather')._t); $('leather')._t = setTimeout(applyEquip, 120); };
-for (const hand of ['right', 'left']) {
-  const inp = $(hand + 'Item');
-  inp.onchange = () => { EQ[hand] = inp.value.trim().toLowerCase().replace(/ /g, '_'); applyEquip(); };
-  $(hand + 'Clear').onclick = () => { inp.value = ''; EQ[hand] = ''; applyEquip(); };
-}
-$('fullSet').onclick = () => {
-  for (const s of ['helmet', 'chest', 'legs', 'boots']) { EQ[s] = $(s).value = 'netherite'; }
-  EQ.trim = $('trim').value = 'silence'; EQ.trimMat = $('trimMat').value = 'gold';
-  applyEquip();
-};
 $('packFile').onchange = async e => {
   const f = e.target.files[0]; if (!f) return;
   setStatus('Reading pack…');
