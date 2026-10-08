@@ -468,7 +468,8 @@ function lights() {
   const yawOff = P.bodyYaw;
   keyLight.color.set($('keyColor').value); keyLight.intensity = P.key * 1.6; place(keyLight, P.keyYaw + yawOff, P.keyPitch, 60);
   rimLight.color.set($('rimColor').value);
-  colorMats.forEach(m => m.emissive.copy(keyLight.color).multiply(m.color).multiplyScalar(P.key * .16)); rimLight.intensity = P.rim * 1.6; place(rimLight, P.keyYaw + yawOff + 180, 20, 60);
+  // held items: Minecraft lights them almost flat, so give them a base glow plus the key light's colour and strength
+  colorMats.forEach(m => m.emissive.copy(m.color).multiplyScalar(.32 + P.ambient * .12).add(keyLight.color.clone().multiply(m.color).multiplyScalar(P.key * .14))); rimLight.intensity = P.rim * 1.6; place(rimLight, P.keyYaw + yawOff + 180, 20, 60);
 }
 function drawBg() {
   const type = $('bgType').value;
@@ -650,7 +651,7 @@ function itemModel(img, id, left) {
   const c = nest(b); c.position.set(left ? -1 : 1, 2, -10);
   const disp = displayFor(id), m = left ? -1 : 1;
   const t = nest(c); t.position.set(disp.t[0] * m, disp.t[1], disp.t[2]);
-  t.rotation.set(disp.r[0] * D, disp.r[1] * D * m, disp.r[2] * D * m, 'XYZ'); t.scale.setScalar(disp.s);
+  t.rotation.set(disp.r[0] * D, disp.r[1] * D * m, disp.r[2] * D * m, 'XYZ'); t.scale.setScalar(disp.s * .9); // a touch smaller than vanilla reads better at video size
   const centre = nest(t); centre.position.set(-8, -8, -8);
   centre.add(g);
   return root;
