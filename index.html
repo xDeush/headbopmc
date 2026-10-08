@@ -610,10 +610,22 @@ function box(mat, w, h, d, infl, u, v, mirror = false) {
 
 // held item: every opaque pixel row-run becomes a 1px-thick voxel strip, like Minecraft's item models
 const colorMats = new Map();
-// tools and weapons are gripped by the handle and point forward; everything else is held small and upright,
-// like the game's 'handheld' vs 'generated' item models
-const HANDHELD = /(sword|_axe|pickaxe|shovel|_hoe|mace|trident|stick|_rod|fishing_rod|on_a_stick|bone|brush)$/;
-function itemModel(img, id) {
+// Held items replicate Minecraft's third-person render chain exactly:
+// arm pivot -> rotX(-90) -> rotY(180) -> translate(±1, 2, -10) px -> item display transform -> centre the 16x16x16 model.
+// Display transforms come from the vanilla item models (thirdperson_righthand); the left hand mirrors them.
+const DISPLAY = {
+  handheld: { r: [0, -90, 55], t: [0, 4, 0.5], s: 0.85 },
+  rod:      { r: [0, 90, 55], t: [0, 4, 2.5], s: 0.85 },
+  bow:      { r: [-80, 260, -40], t: [-1, -2, 2.5], s: 0.9 },
+  generated:{ r: [0, 0, 0], t: [0, 3, 1], s: 0.55 },
+};
+const HANDHELD = /(sword|_axe|pickaxe|shovel|_hoe|mace|stick|blaze_rod|breeze_rod|bone|debug_stick)$/;
+function displayFor(id) {
+  if (/fishing_rod|on_a_stick$/.test(id)) return DISPLAY.rod;
+  if (/^(bow|crossbow)$/.test(id)) return DISPLAY.bow;
+  return HANDHELD.test(id) ? DISPLAY.handheld : DISPLAY.generated;
+}
+function itemModel(img, id, left) {
   const w = img.width, { d } = pixels(img, w, w);
   const g = new T.Group(), geo = new T.Box(1, 1, 1), px = d.data;
   for (let y = 0; y < w; y++) for (let x = 0; x < w;) {
@@ -625,21 +637,23 @@ function itemModel(img, id) {
     let m = colorMats.get(col);
     if (!m) { m = T.mat.clone(); m.map = null; m.transparent = false; m.alphaTest = 0; m.color.setHex(col); colorMats.set(col, m); }
     const mesh = new T.Mesh(geo, m);
-    mesh.scale.set(e - x, 1, 1); mesh.position.set((x + e) / 2 - w / 2, w / 2 - y - 0.5, 0);
+    // item model space: 0..16, y up, 1px thick slab centred on z = 8
+    mesh.scale.set(e - x, 1, 1); mesh.position.set((x + e) / 2, w - y - 0.5, w / 2);
     g.add(mesh); x = e;
   }
   g.scale.setScalar(16 / w);
-  const holder = new T.Group(); holder.add(g);
-  holder.rotation.set(0, -Math.PI / 2, 0);
-  if (HANDHELD.test(id)) {
-    g.position.set(5.5, 5.5, 0); // grip pixel (2, 13) sits in the fist
-    holder.position.set(0, -5.5, 0.5); holder.scale.setScalar(.8);
-  } else {
-    const big = /bow$|shield|totem/.test(id);
-    holder.position.set(0, -6.5, 2.2); holder.scale.setScalar(big ? .62 : .5);
-    holder.rotation.x = -0.25;
-  }
-  return holder;
+  const D = Math.PI / 180, nest = (parent) => { const c = new T.Group(); parent.add(c); return c; };
+  const root = new T.Group();
+  const model = nest(root); model.rotation.x = Math.PI;             // skinview3d axes -> Minecraft model axes (y and z flipped)
+  const a = nest(model); a.rotation.x = -90 * D;
+  const b = nest(a); b.rotation.y = 180 * D;
+  const c = nest(b); c.position.set(left ? -1 : 1, 2, -10);
+  const disp = displayFor(id), m = left ? -1 : 1;
+  const t = nest(c); t.position.set(disp.t[0] * m, disp.t[1], disp.t[2]);
+  t.rotation.set(disp.r[0] * D, disp.r[1] * D * m, disp.r[2] * D * m, 'XYZ'); t.scale.setScalar(disp.s);
+  const centre = nest(t); centre.position.set(-8, -8, -8);
+  centre.add(g);
+  return root;
 }
 
 const EQ = { right: '', left: '', helmet: '', chest: '', legs: '', boots: '', trim: '', trimMat: 'gold', leather: '#a06540' };
@@ -682,7 +696,7 @@ async function applyEquip() {
   const add = (parent, mesh, pos) => built.push([parent, mesh, pos]);
   const armL = SK.leftArm.children[0], armR = SK.rightArm.children[0], legL = SK.leftLeg.children[0], legR = SK.rightLeg.children[0];
   try {
-    for (const [hand, arm] of [['right', armR], ['left', armL]]) if (EQ[hand]) add(arm, itemModel(await tex(`item/${EQ[hand]}.png`), EQ[hand]));
+    for (const [hand, arm] of [['right', SK.rightArm], ['left', SK.leftArm]]) if (EQ[hand]) add(arm, itemModel(await tex(`item/${EQ[hand]}.png`), EQ[hand], hand === 'left'));
     const piece = async (slot, layer, place) => {
       if (!EQ[slot]) return;
       const mats = [mkMat(await armorCanvas(layer, EQ[slot]))];
